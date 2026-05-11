@@ -1,0 +1,22 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("SUPABASE_DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum AccountTier {
+  free
+  pro
+  admin
+}
+
+model User {
+  id          String      @id                // matches supabase auth.users id
+  email       String?                        // can be relay email from apple
+  accountTier AccountTier @default(free)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
