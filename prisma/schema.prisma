@@ -13,7 +13,7 @@ enum AccountTier {
   admin
 }
 
-model User {
+model weight_User {
   id          String      @id                // matches supabase auth.users id
   email       String?                        // can be relay email from apple
   accountTier AccountTier @default(free)
