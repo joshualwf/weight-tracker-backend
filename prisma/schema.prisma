@@ -13,10 +13,64 @@ enum AccountTier {
   admin
 }
 
+enum SubscriptionStatus {
+  none
+  trial
+  active
+  expired
+  cancelled
+}
+
+enum PaymentStatus {
+  pending
+  succeeded
+  failed
+  refunded
+}
+
 model weight_User {
-  id          String      @id                // matches supabase auth.users id
-  email       String?                        // can be relay email from apple
-  accountTier AccountTier @default(free)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id                 String             @id
+  email              String?
+  accountTier        AccountTier        @default(free)
+  subscriptionStatus SubscriptionStatus @default(none)
+  appleUserId        String?            @unique
+  trialStartAt       DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  subscriptions      weight_Subscription[]
+  payments           weight_Payment[]
+}
+
+model weight_Subscription {
+  id                  String             @id @default(uuid())
+  userId              String
+  user                weight_User        @relation(fields: [userId], references: [id])
+  status              SubscriptionStatus
+  priceAmountCents    Int
+  currency            String             @default("USD")
+  currentPeriodStart  DateTime
+  currentPeriodEnd    DateTime
+  cancelledAt         DateTime?
+  providerName        String?
+  providerSubId       String?            @unique
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  payments            weight_Payment[]
+}
+
+model weight_Payment {
+  id                String               @id @default(uuid())
+  userId            String
+  user              weight_User          @relation(fields: [userId], references: [id])
+  subscriptionId    String?
+  subscription      weight_Subscription? @relation(fields: [subscriptionId], references: [id])
+  amountCents       Int
+  currency          String               @default("USD")
+  status            PaymentStatus
+  providerName      String?
+  providerPaymentId String?              @unique
+  paidAt            DateTime?
+  createdAt         DateTime             @default(now())
 }
